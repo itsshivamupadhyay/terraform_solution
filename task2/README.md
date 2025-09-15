@@ -1,6 +1,6 @@
 🛡️ Task 2 — Secure AWS Infrastructure with Terraform
 🚀 Deployment Guide
-1. Bootstrap the Remote Backend
+Bootstrap the Remote Backend
 
   We use S3 + DynamoDB for Terraform state & locking.
   
@@ -17,17 +17,16 @@
   
   Generate provider.tf with backend config.
 
-2. Initialize Terraform
-terraform init -upgrade
-3. Validate
-terraform validate
-terraform fmt -recursive
-4. Plan
-terraform plan -out=tfplan
-5. Apply
-terraform apply "tfplan"
-6. Destroy (when done)
-terraform destroy
+Initialize Terraform
+  terraform init -upgrade
+Validate
+  terraform validate
+  terraform fmt -recursive
+Plan
+  terraform plan -out=tfplan
+Apply
+  terraform apply "tfplan"
+
 🔐 Security Best Practices Implemented
 
 VPC security
