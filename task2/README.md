@@ -2,20 +2,20 @@
 🚀 Deployment Guide
 1. Bootstrap the Remote Backend
 
-We use S3 + DynamoDB for Terraform state & locking.
-
-Run the bootstrap script (one-time):
-
-chmod +x backend_bootstrap.sh
-./backend_bootstrap.sh us-east-1 shivam-terraform-statev1 terraform-locks
-
-This will:
-
-Create a unique S3 bucket (shivam-terraform-statev1-<account_id>)
-
-Create a DynamoDB table (terraform-locks)
-
-Generate provider.tf with backend config.
+  We use S3 + DynamoDB for Terraform state & locking.
+  
+  Run the bootstrap script (one-time):
+  
+  chmod +x backend_bootstrap.sh
+  ./backend_bootstrap.sh us-east-1 shivam-terraform-statev1 terraform-locks
+  
+  This will:
+  
+  Create a unique S3 bucket (shivam-terraform-statev1-<account_id>)
+  
+  Create a DynamoDB table (terraform-locks)
+  
+  Generate provider.tf with backend config.
 
 2. Initialize Terraform
 terraform init -upgrade
