@@ -1,0 +1,16 @@
+aws_region          = "us-east-1"
+project             = "shivam-devops"
+env                 = "staging"
+
+vpc_cidr            = "10.0.0.0/16"
+public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
+availability_zones  = ["us-east-1a", "us-east-1b"]
+
+instance_type       = "t3.micro"
+key_name            = "new"
+allowed_ssh_cidr    = "203.0.113.45/32" # replace with your IP
+
+db_name             = "appdb"
+db_username         = "dbadmin"
+db_password         = "ChangeMe123!"
