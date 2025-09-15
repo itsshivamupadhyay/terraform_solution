@@ -74,11 +74,35 @@ Update:
 ---
 
 ### 2. Initialize Terraform
-Run initialization with backend configuration:  
+Terraform can be initialized in **two ways**:
+
+#### Option A — Inline Backend Config (One-Time Setup)
 ```bash
 terraform init   -backend-config="bucket=shivam-terraform-state"   -backend-config="key=shivam-devops/terraform.tfstate"   -backend-config="region=us-east-1"   -backend-config="dynamodb_table=terraform-locks"
 ```
 
+#### Option B — Using `backend.tf` File (Recommended)
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "shivam-terraform-state"
+    key            = "shivam-devops/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-locks"
+    encrypt        = true
+  }
+}
+```
+
+Then simply run:
+```bash
+terraform init
+```
+
+📌 **Pro Tip:** If you switch methods or update backend config, re-run:
+```bash
+terraform init -reconfigure
+```
 ---
 
 ### 3. Workspaces (Multi-Env Support)
