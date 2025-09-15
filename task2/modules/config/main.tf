@@ -1,3 +1,4 @@
+
 locals {
   name = "${var.project}-${var.env}-config"
   tags = {
@@ -9,9 +10,11 @@ locals {
 # ──────────────────────────────
 # S3 bucket for Config logs
 # ──────────────────────────────
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "config" {
   count         = var.enabled ? 1 : 0
-  bucket        = "${var.project}-${var.env}-config-logs"
+  bucket        = "${var.project}-${var.env}-${data.aws_caller_identity.current.account_id}-config-logs"
   force_destroy = true
   tags          = local.tags
 }
@@ -22,6 +25,7 @@ resource "aws_s3_bucket_versioning" "config" {
   versioning_configuration {
     status = "Enabled"
   }
+  depends_on = [aws_s3_bucket.config]
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "config" {
@@ -32,6 +36,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "config" {
       sse_algorithm = "AES256"
     }
   }
+  depends_on = [aws_s3_bucket.config]
 }
 
 resource "aws_s3_bucket_public_access_block" "config" {
@@ -41,6 +46,7 @@ resource "aws_s3_bucket_public_access_block" "config" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+  depends_on              = [aws_s3_bucket.config]
 }
 
 # ──────────────────────────────
@@ -97,7 +103,6 @@ resource "aws_config_delivery_channel" "this" {
   name           = "${local.name}-delivery"
   s3_bucket_name = aws_s3_bucket.config[0].id
 
-  # Ensure recorder exists first
   depends_on = [aws_config_configuration_recorder.this]
 }
 
@@ -106,7 +111,6 @@ resource "aws_config_configuration_recorder_status" "status" {
   name       = aws_config_configuration_recorder.this[0].name
   is_enabled = true
 
-  # Ensure delivery channel is in place before enabling
   depends_on = [aws_config_delivery_channel.this]
 }
 

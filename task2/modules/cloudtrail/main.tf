@@ -9,8 +9,10 @@ locals {
 # ──────────────────────────────
 # S3 Bucket for CloudTrail logs
 # ──────────────────────────────
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "trail" {
-  bucket        = "${var.project}-${var.env}-ct-logs"
+  bucket        = "${var.project}-${var.env}-${data.aws_caller_identity.current.account_id}-ct-logs"
   force_destroy = true
   tags          = local.tags
 }
@@ -20,6 +22,7 @@ resource "aws_s3_bucket_versioning" "trail" {
   versioning_configuration {
     status = "Enabled"
   }
+  depends_on = [aws_s3_bucket.trail]
 }
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "trail" {
@@ -29,6 +32,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "trail" {
       sse_algorithm = "AES256"
     }
   }
+  depends_on = [aws_s3_bucket.trail]
 }
 
 resource "aws_s3_bucket_public_access_block" "trail" {
@@ -37,13 +41,12 @@ resource "aws_s3_bucket_public_access_block" "trail" {
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
+  depends_on              = [aws_s3_bucket.trail]
 }
 
 # ──────────────────────────────
 # S3 Bucket Policy for CloudTrail
 # ──────────────────────────────
-data "aws_caller_identity" "current" {}
-
 data "aws_iam_policy_document" "trail_bucket" {
   statement {
     sid = "AWSCloudTrailAclCheck"
@@ -73,8 +76,9 @@ data "aws_iam_policy_document" "trail_bucket" {
 }
 
 resource "aws_s3_bucket_policy" "trail" {
-  bucket = aws_s3_bucket.trail.id
-  policy = data.aws_iam_policy_document.trail_bucket.json
+  bucket     = aws_s3_bucket.trail.id
+  policy     = data.aws_iam_policy_document.trail_bucket.json
+  depends_on = [aws_s3_bucket.trail]
 }
 
 # ──────────────────────────────
@@ -123,17 +127,13 @@ resource "aws_iam_role_policy" "trail_to_cw" {
 resource "aws_cloudtrail" "this" {
   name                          = local.name
   s3_bucket_name                = aws_s3_bucket.trail.id
-
-  # 👇 FIXED: Must include :* for ARN validation
   cloud_watch_logs_group_arn    = "${aws_cloudwatch_log_group.trail.arn}:*"
   cloud_watch_logs_role_arn     = aws_iam_role.trail.arn
-
   include_global_service_events = true
   is_multi_region_trail         = true
   enable_logging                = true
   tags                          = local.tags
 
-  # 👇 Ensure resources are ready first
   depends_on = [
     aws_iam_role_policy.trail_to_cw,
     aws_s3_bucket_policy.trail,

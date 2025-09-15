@@ -47,4 +47,10 @@ module "config" {
   project = var.project
   env     = var.env
 }
+module "cw_alarms" {
+  source         = "./modules/cw_alarms"
+  project        = var.project
+  env            = var.env
+  log_group_name = "/aws/cloudtrail/${var.project}-${var.env}"
+}
 
